@@ -2,13 +2,13 @@
 #include <HTTPClient.h>
 
 // ===== CONFIG =====
-const char* ssid = "YOUR_WIFI_NAME";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "test";
+const char* password = "test1234";
 
 String ticker = "BTC";
 String convert = "USDT";
 float deltaTrigger = 0.01;      // 1%
-int refreshSeconds = 30;
+int refreshSeconds = 10;
 
 const int LED_PIN = 2;          // Your alert LED (built-in LED = 2)
 
