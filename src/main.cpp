@@ -17,7 +17,7 @@ String endpoint = "https://api.binance.com/api/v3/avgPrice?symbol=BTCUSDT";
 String coinName = "BTC";
 
 float deltaTrigger = 0.02;
-int refreshSeconds = 10;
+int refreshSeconds = 15;
 
 const int LED_GREEN = 5;
 const int LED_RED = 4;
@@ -50,7 +50,7 @@ byte uparrow[8] = {
 WebServer server(80);
 
 // Price history for chart
-float priceHistory[50];
+float priceHistory[300];
 int priceIndex = 0;
 
 // ===== WIFI RECONNECT =====
