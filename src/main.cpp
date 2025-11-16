@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <WebServer.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -11,7 +12,7 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 const char *ssid = "test";
 const char *password = "test1234";
 
-String endpoint = "https://api.binancAce.com/api/v3/avgPrice?symbol=BTCUSDT";
+String endpoint = "https://api.binance.com/api/v3/avgPrice?symbol=BTCUSDT";
 String coinName = "BTC";
 
 float deltaTrigger = 0.02;
@@ -128,12 +129,11 @@ void handleRoot()
   server.send(200, "text/html", getDashboardHTML());
 }
 
-// ============= LCD TICKER SCROLL =============
+// ============= LCD TICKER SCROLL ============
 void lcdTickerSpecial(String text, char arrowChar)
 {
   for (int i = 0; i <= text.length() - 16; i++)
   {
-
     lcd.setCursor(0, 0);
     lcd.clear();
 
@@ -227,29 +227,32 @@ void setup()
 
 void loop()
 {
-
   wifiReconnect();
   server.handleClient();
 
   if (WiFi.status() == WL_CONNECTED)
   {
+    WiFiClientSecure client;
+    client.setInsecure(); // SKIP SSL CERT CHECK
 
     HTTPClient http;
-    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-
-    http.begin(endpoint);
+    http.begin(client, endpoint);
     http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
 
     int code = http.GET();
     if (code == 200)
     {
-
       String payload = http.getString();
       int a = payload.indexOf(":\"") + 2;
       int b = payload.indexOf("\"", a);
       latestPrice = payload.substring(a, b).toFloat();
 
       percentChange = getPercent(latestPrice, previousPrice);
+      Serial.println("===============");
+      Serial.println("Latest Price: " + String(latestPrice));
+      Serial.println("Percent Change: " + String(percentChange)); 
+      Serial.println("Previous Price: " + String(previousPrice));
+      Serial.println("===============");
 
       // Update LED
       digitalWrite(LED_GREEN, percentChange > 0 ? HIGH : LOW);
@@ -266,13 +269,8 @@ void loop()
       // ===== LCD DISPLAY =====
       lcd.clear();
 
-      // Ticker: "BTC 95000 ▲ +1.52%"
       char arrowChar = percentChange > 0 ? 0 : (percentChange < 0 ? 1 : 2);
-      // 0 = up arrow custom char
-      // 1 = down arrow custom char
-      // 2 = "-" fallback
-
-      String ticker = String(latestPrice, 2) + " @ " + String(percentChange, 2) + "%";
+      String ticker = String(latestPrice, 2) + " @ " + String(percentChange, 2) + "%";  //Latest price set to 1 decimal place because BTC price is large for LCD Screen :p
 
       lcdTickerSpecial(ticker, arrowChar);
 
@@ -280,8 +278,6 @@ void loop()
       lcd.print(previousPrice, 3);
       lcd.print(" ");
       lcd.print(coinName);
-
-      
 
       previousPrice = latestPrice;
 
