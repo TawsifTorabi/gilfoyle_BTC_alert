@@ -11,7 +11,8 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 const char *ssid = "test";
 const char *password = "test1234";
 
-String endpoint = "https://api.binance.com/api/v3/avgPrice?symbol=BTCUSDT";
+String endpoint = "https://api.binancAce.com/api/v3/avgPrice?symbol=BTCUSDT";
+String coinName = "BTC";
 
 float deltaTrigger = 0.02;
 int refreshSeconds = 10;
@@ -209,6 +210,15 @@ void setup()
   lcd.clear();
   lcd.print("WiFi OK");
 
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
+  struct tm timeinfo;
+  while (!getLocalTime(&timeinfo))
+  {
+    Serial.println("Waiting for NTP...");
+    delay(500);
+  }
+
   // Start web server
   server.on("/", handleRoot);
   server.begin();
@@ -225,6 +235,8 @@ void loop()
   {
 
     HTTPClient http;
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
     http.begin(endpoint);
     http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
 
@@ -260,13 +272,16 @@ void loop()
       // 1 = down arrow custom char
       // 2 = "-" fallback
 
-      String ticker = "BTC " + String(latestPrice, 0) + " @ " + String(percentChange, 2) + "%";
+      String ticker = String(latestPrice, 2) + " @ " + String(percentChange, 2) + "%";
 
       lcdTickerSpecial(ticker, arrowChar);
 
       lcd.setCursor(0, 1);
-      lcd.print("Prev:");
-      lcd.print(previousPrice, 0);
+      lcd.print(previousPrice, 3);
+      lcd.print(" ");
+      lcd.print(coinName);
+
+      
 
       previousPrice = latestPrice;
 
