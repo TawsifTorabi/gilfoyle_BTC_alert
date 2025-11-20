@@ -6,7 +6,8 @@
 A smart Bitcoin price monitoring system built for ESP8266/ESP32 with LCD display, LEDs, Web Dashboard, and real-time Binance API alerts.
 
 
-[Gilfoyle](docs/gilfoyle.png)
+![Gilfoyle](docs/gilfoyle.png)
+
 
 - - -
 
